@@ -53,11 +53,11 @@ Spring Boot's default Jackson setup already writes `java.time` types as ISO stri
 - [x] `cd backend && mvn test`: all tests pass, old and new (41 tests; there is no `mvnw` in `backend/`)
 - [x] `cd frontend && npx ng test --watch=false --browsers=ChromeHeadless`: all tests pass (28 tests)
 - [x] `cd frontend && npx ng build`: checks strict templates and the style budget
-- [ ] Manual: `POST /api/tasks` with `{"title":"x","dueDate":"2026-12-01"}` returns `"dueDate":"2026-12-01"`
-- [ ] Manual: `PUT /api/tasks/{id}` with `"dueDate":null` clears it
-- [ ] Manual: `"dueDate":"bad"` returns 400, not 500
-- [ ] Manual (UI): set a date on a new task, change it inline, and confirm a past-dated incomplete task is highlighted as overdue
+- [x] Manual: `POST /api/tasks` with `{"title":"x","dueDate":"2026-12-01"}` returns `"dueDate":"2026-12-01"`
+- [x] Manual: `PUT /api/tasks/{id}` with `"dueDate":null` clears it
+- [x] Manual: `"dueDate":"bad"` returns 400, not 500 (also `2026-13-45` → 400; omitted field → `null`; past date accepted)
+- [x] Manual (UI): set a date on a new task, change it inline, and confirm a past-dated incomplete task is highlighted as overdue (also confirmed: completing an overdue task removes the highlight; future dates stay unhighlighted)
 
 ### 5. Wrap-up
-- [ ] Commit the code as `feat(task): add optional due date to tasks` (separate `test:` commit if preferred)
+- [x] Commit the code as `feat(task): add optional due date to tasks` (separate `test:` commit if preferred) — `3522fc8` (feat), `4896d65` (test)
 - [ ] PR description covers what changed, why and how to test
