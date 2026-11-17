@@ -33,6 +33,25 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
+    public Task update(Long ownerId, Long taskId, String title, String description) {
+        // Bean Validation is inert in this project (no @Valid on controllers), so enforce here.
+        if (title == null || title.isBlank()) {
+            throw new IllegalArgumentException("Title must not be blank");
+        }
+
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new NoSuchElementException("Task not found: " + taskId));
+
+        // Report another user's task as not found so task IDs can't be probed.
+        if (!task.getOwnerId().equals(ownerId)) {
+            throw new NoSuchElementException("Task not found: " + taskId);
+        }
+
+        task.setTitle(title);
+        task.setDescription(description);
+        return taskRepository.save(task);
+    }
+
     public void delete(Long ownerId, Long taskId) {
         taskRepository.deleteById(taskId);
     }
