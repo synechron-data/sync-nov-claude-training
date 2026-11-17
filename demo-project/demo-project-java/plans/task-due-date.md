@@ -60,4 +60,4 @@ Spring Boot's default Jackson setup already writes `java.time` types as ISO stri
 
 ### 5. Wrap-up
 - [x] Commit the code as `feat(task): add optional due date to tasks` (separate `test:` commit if preferred) — `3522fc8` (feat), `4896d65` (test)
-- [ ] PR description covers what changed, why and how to test
+- [x] PR description covers what changed, why and how to test — https://github.com/synechron-data/sync-nov-claude-training/pull/1
