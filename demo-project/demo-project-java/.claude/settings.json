@@ -20,8 +20,8 @@
         "ask": [
             "Bash(git push:*)",
             "Bash(npm install *)",
-            "Write(backend/pom.xml)",
-            "Write(frontend/package.json)"
+            "Edit(backend/pom.xml)",
+            "Edit(frontend/package.json)"
         ],
         "deny": [
             "Read(**/application.properties)",
