@@ -7,6 +7,7 @@ export interface Task {
   title: string;
   description: string;
   completed: boolean;
+  dueDate: string | null;
   ownerId: number;
   createdAt: string;
 }
@@ -21,8 +22,12 @@ export class TaskService {
     return this.http.get<Task[]>(this.baseUrl);
   }
 
-  create(title: string, description: string): Observable<Task> {
-    return this.http.post<Task>(this.baseUrl, { title, description });
+  create(title: string, description: string, dueDate: string | null = null): Observable<Task> {
+    return this.http.post<Task>(this.baseUrl, { title, description, dueDate });
+  }
+
+  update(id: number, title: string, description: string, dueDate: string | null): Observable<Task> {
+    return this.http.put<Task>(`${this.baseUrl}/${id}`, { title, description, dueDate });
   }
 
   complete(id: number): Observable<Task> {
