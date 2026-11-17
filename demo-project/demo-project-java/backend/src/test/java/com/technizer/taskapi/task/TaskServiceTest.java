@@ -8,6 +8,7 @@ package com.technizer.taskapi.task;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -27,6 +28,57 @@ class TaskServiceTest {
     @Test
     void placeholder() {
         // Replaced live during the session.
+    }
+
+    @Test
+    void listCompletedForOwnerReturnsOnlyCompletedTasksFromRepository() {
+        Task done = new Task("Done", "Finished", 1L);
+        done.setCompleted(true);
+        when(taskRepository.findByOwnerIdAndCompletedTrue(1L)).thenReturn(List.of(done));
+
+        List<Task> result = taskService.listCompletedForOwner(1L);
+
+        assertThat(result).containsExactly(done);
+        assertThat(result).allMatch(Task::isCompleted);
+        verify(taskRepository).findByOwnerIdAndCompletedTrue(1L);
+    }
+
+    @Test
+    void listCompletedForOwnerReturnsEmptyListWhenNoneCompleted() {
+        when(taskRepository.findByOwnerIdAndCompletedTrue(1L)).thenReturn(List.of());
+
+        assertThat(taskService.listCompletedForOwner(1L)).isEmpty();
+    }
+
+    @Test
+    void listCompletedForOwnerReturnsAllCompletedTasksInRepositoryOrder() {
+        Task first = new Task("First", null, 1L);
+        first.setCompleted(true);
+        Task second = new Task("Second", "Desc", 1L);
+        second.setCompleted(true);
+        when(taskRepository.findByOwnerIdAndCompletedTrue(1L)).thenReturn(List.of(first, second));
+
+        assertThat(taskService.listCompletedForOwner(1L)).containsExactly(first, second);
+    }
+
+    @Test
+    void listCompletedForOwnerQueriesOnlyTheGivenOwner() {
+        when(taskRepository.findByOwnerIdAndCompletedTrue(2L)).thenReturn(List.of());
+
+        taskService.listCompletedForOwner(2L);
+
+        verify(taskRepository).findByOwnerIdAndCompletedTrue(2L);
+        verify(taskRepository, never()).findByOwnerIdAndCompletedTrue(1L);
+        verify(taskRepository, never()).findByOwnerId(any());
+    }
+
+    @Test
+    void listCompletedForOwnerWithNullOwnerReturnsWhatRepositoryReturns() {
+        // No null guard in the service: null is passed straight to the repository.
+        when(taskRepository.findByOwnerIdAndCompletedTrue(null)).thenReturn(List.of());
+
+        assertThat(taskService.listCompletedForOwner(null)).isEmpty();
+        verify(taskRepository).findByOwnerIdAndCompletedTrue(null);
     }
 
     @Test
