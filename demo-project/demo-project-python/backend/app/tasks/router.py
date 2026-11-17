@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Response
 
 from app.dependencies import CurrentUserId, TaskServiceDep
-from app.tasks.schemas import CreateTaskRequest, TaskResponse
+from app.tasks.schemas import CreateTaskRequest, TaskResponse, UpdateTaskRequest
 
 router = APIRouter(prefix="/api/tasks", tags=["tasks"])
 
@@ -16,6 +16,16 @@ def create_task(
     request: CreateTaskRequest, owner_id: CurrentUserId, task_service: TaskServiceDep
 ):
     return task_service.create(owner_id, request.title, request.description)
+
+
+@router.put("/{task_id}", response_model=TaskResponse)
+def update_task(
+    task_id: int,
+    request: UpdateTaskRequest,
+    owner_id: CurrentUserId,
+    task_service: TaskServiceDep,
+):
+    return task_service.update(owner_id, task_id, request.title, request.description)
 
 
 @router.patch("/{task_id}/complete", response_model=TaskResponse)

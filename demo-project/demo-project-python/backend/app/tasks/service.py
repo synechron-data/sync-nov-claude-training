@@ -15,6 +15,21 @@ class TaskService:
         task = Task(title=title, description=description, owner_id=owner_id)
         return self._task_repository.save(task)
 
+    def update(
+        self, owner_id: int, task_id: int, title: str, description: str | None
+    ) -> Task:
+        if not title or not title.strip():
+            raise ValueError("Title must not be blank")
+
+        task = self._task_repository.find_by_id(task_id)
+        # Report another user's task as not found so task IDs can't be probed.
+        if task is None or task.owner_id != owner_id:
+            raise LookupError(f"Task not found: {task_id}")
+
+        task.title = title
+        task.description = description
+        return self._task_repository.save(task)
+
     def mark_completed(self, owner_id: int, task_id: int) -> Task:
         task = self._task_repository.find_by_id(task_id)
         if task is None:

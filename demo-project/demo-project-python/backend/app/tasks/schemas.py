@@ -10,6 +10,11 @@ class CreateTaskRequest(CamelModel):
     description: str | None = None
 
 
+class UpdateTaskRequest(CamelModel):
+    title: NotBlankStr
+    description: str | None = None
+
+
 class TaskResponse(CamelModel):
     model_config = ConfigDict(from_attributes=True)
 
