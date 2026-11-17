@@ -8,6 +8,7 @@ package com.technizer.taskapi.task;
 
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -87,7 +88,7 @@ class TaskServiceTest {
         when(taskRepository.findById(10L)).thenReturn(Optional.of(task));
         when(taskRepository.save(task)).thenReturn(task);
 
-        Task result = taskService.update(1L, 10L, "New title", "New description");
+        Task result = taskService.update(1L, 10L, "New title", "New description", null);
 
         assertThat(result.getTitle()).isEqualTo("New title");
         assertThat(result.getDescription()).isEqualTo("New description");
@@ -100,7 +101,7 @@ class TaskServiceTest {
         when(taskRepository.findById(10L)).thenReturn(Optional.of(task));
         when(taskRepository.save(task)).thenReturn(task);
 
-        Task result = taskService.update(1L, 10L, "New title", null);
+        Task result = taskService.update(1L, 10L, "New title", null, null);
 
         assertThat(result.getDescription()).isNull();
     }
@@ -112,7 +113,7 @@ class TaskServiceTest {
         when(taskRepository.findById(10L)).thenReturn(Optional.of(task));
         when(taskRepository.save(task)).thenReturn(task);
 
-        Task result = taskService.update(1L, 10L, "New title", "New description");
+        Task result = taskService.update(1L, 10L, "New title", "New description", null);
 
         assertThat(result.isCompleted()).isTrue();
         assertThat(result.getOwnerId()).isEqualTo(1L);
@@ -122,7 +123,7 @@ class TaskServiceTest {
     void updateThrowsNotFoundWhenTaskMissing() {
         when(taskRepository.findById(99L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> taskService.update(1L, 99L, "Title", "Desc"))
+        assertThatThrownBy(() -> taskService.update(1L, 99L, "Title", "Desc", null))
                 .isInstanceOf(NoSuchElementException.class);
         verify(taskRepository, never()).save(any());
     }
@@ -132,7 +133,7 @@ class TaskServiceTest {
         Task task = new Task("Old title", "Old description", 2L);
         when(taskRepository.findById(10L)).thenReturn(Optional.of(task));
 
-        assertThatThrownBy(() -> taskService.update(1L, 10L, "New title", "New description"))
+        assertThatThrownBy(() -> taskService.update(1L, 10L, "New title", "New description", null))
                 .isInstanceOf(NoSuchElementException.class);
         assertThat(task.getTitle()).isEqualTo("Old title");
         verify(taskRepository, never()).save(any());
@@ -140,10 +141,98 @@ class TaskServiceTest {
 
     @Test
     void updateRejectsBlankOrNullTitle() {
-        assertThatThrownBy(() -> taskService.update(1L, 10L, "   ", "Desc"))
+        assertThatThrownBy(() -> taskService.update(1L, 10L, "   ", "Desc", null))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> taskService.update(1L, 10L, null, "Desc"))
+        assertThatThrownBy(() -> taskService.update(1L, 10L, null, "Desc", null))
                 .isInstanceOf(IllegalArgumentException.class);
+        verify(taskRepository, never()).save(any());
+    }
+
+    @Test
+    void createStoresDueDateOnSavedTask() {
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+        LocalDate due = LocalDate.of(2026, 12, 1);
+
+        Task result = taskService.create(1L, "Title", "Desc", due);
+
+        assertThat(result.getDueDate()).isEqualTo(due);
+        assertThat(result.getTitle()).isEqualTo("Title");
+        assertThat(result.getOwnerId()).isEqualTo(1L);
+    }
+
+    @Test
+    void createWithNullDueDateLeavesDueDateEmpty() {
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Task result = taskService.create(1L, "Title", "Desc", null);
+
+        assertThat(result.getDueDate()).isNull();
+    }
+
+    @Test
+    void createAcceptsPastDueDate() {
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+        LocalDate past = LocalDate.of(2000, 1, 1);
+
+        Task result = taskService.create(1L, "Backdated", null, past);
+
+        assertThat(result.getDueDate()).isEqualTo(past);
+    }
+
+    @Test
+    void updateSetsDueDateWhenNoneWasSet() {
+        Task task = new Task("Title", "Desc", 1L);
+        when(taskRepository.findById(10L)).thenReturn(Optional.of(task));
+        when(taskRepository.save(task)).thenReturn(task);
+        LocalDate due = LocalDate.of(2026, 12, 1);
+
+        Task result = taskService.update(1L, 10L, "Title", "Desc", due);
+
+        assertThat(result.getDueDate()).isEqualTo(due);
+    }
+
+    @Test
+    void updateChangesExistingDueDate() {
+        Task task = new Task("Title", "Desc", 1L);
+        task.setDueDate(LocalDate.of(2026, 12, 1));
+        when(taskRepository.findById(10L)).thenReturn(Optional.of(task));
+        when(taskRepository.save(task)).thenReturn(task);
+
+        Task result = taskService.update(1L, 10L, "Title", "Desc", LocalDate.of(2027, 1, 15));
+
+        assertThat(result.getDueDate()).isEqualTo(LocalDate.of(2027, 1, 15));
+    }
+
+    @Test
+    void updateWithNullDueDateClearsExistingDueDate() {
+        Task task = new Task("Title", "Desc", 1L);
+        task.setDueDate(LocalDate.of(2026, 12, 1));
+        when(taskRepository.findById(10L)).thenReturn(Optional.of(task));
+        when(taskRepository.save(task)).thenReturn(task);
+
+        Task result = taskService.update(1L, 10L, "Title", "Desc", null);
+
+        assertThat(result.getDueDate()).isNull();
+    }
+
+    @Test
+    void updateByAnotherOwnerDoesNotChangeDueDate() {
+        LocalDate original = LocalDate.of(2026, 12, 1);
+        Task task = new Task("Title", "Desc", 2L);
+        task.setDueDate(original);
+        when(taskRepository.findById(10L)).thenReturn(Optional.of(task));
+
+        assertThatThrownBy(() -> taskService.update(1L, 10L, "Title", "Desc", LocalDate.of(2030, 1, 1)))
+                .isInstanceOf(NoSuchElementException.class);
+        assertThat(task.getDueDate()).isEqualTo(original);
+        verify(taskRepository, never()).save(any());
+    }
+
+    @Test
+    void updateWithBlankTitleDoesNotChangeDueDate() {
+        assertThatThrownBy(() -> taskService.update(1L, 10L, " ", "Desc", LocalDate.of(2026, 12, 1)))
+                .isInstanceOf(IllegalArgumentException.class);
+        verify(taskRepository, never()).findById(any());
         verify(taskRepository, never()).save(any());
     }
 }

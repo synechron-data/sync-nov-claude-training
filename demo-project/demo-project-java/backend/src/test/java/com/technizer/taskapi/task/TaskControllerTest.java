@@ -3,6 +3,7 @@ package com.technizer.taskapi.task;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -59,12 +60,60 @@ class TaskControllerTest {
     @Test
     void updateDelegatesToServiceWithOwnerIdAndRequestFields() {
         Task updated = new Task("New title", "New description", 1L);
-        when(taskService.update(1L, 5L, "New title", "New description")).thenReturn(updated);
+        when(taskService.update(1L, 5L, "New title", "New description", null)).thenReturn(updated);
 
         Task result = controller.update(1L, 5L,
-                new TaskController.UpdateTaskRequest("New title", "New description"));
+                new TaskController.UpdateTaskRequest("New title", "New description", null));
 
         assertThat(result).isSameAs(updated);
-        verify(taskService).update(1L, 5L, "New title", "New description");
+        verify(taskService).update(1L, 5L, "New title", "New description", null);
+    }
+
+    @Test
+    void createPassesDueDateThroughToService() {
+        LocalDate due = LocalDate.of(2026, 12, 1);
+        Task created = new Task("Title", "Desc", 1L);
+        created.setDueDate(due);
+        when(taskService.create(1L, "Title", "Desc", due)).thenReturn(created);
+
+        Task result = controller.create(1L, new TaskController.CreateTaskRequest("Title", "Desc", due));
+
+        assertThat(result).isSameAs(created);
+        assertThat(result.getDueDate()).isEqualTo(due);
+        verify(taskService).create(1L, "Title", "Desc", due);
+    }
+
+    @Test
+    void createPassesNullDueDateThroughToService() {
+        Task created = new Task("Title", "Desc", 1L);
+        when(taskService.create(1L, "Title", "Desc", null)).thenReturn(created);
+
+        Task result = controller.create(1L, new TaskController.CreateTaskRequest("Title", "Desc", null));
+
+        assertThat(result.getDueDate()).isNull();
+        verify(taskService).create(1L, "Title", "Desc", null);
+    }
+
+    @Test
+    void updatePassesDueDateThroughToService() {
+        LocalDate due = LocalDate.of(2027, 1, 15);
+        Task updated = new Task("Title", "Desc", 1L);
+        updated.setDueDate(due);
+        when(taskService.update(1L, 5L, "Title", "Desc", due)).thenReturn(updated);
+
+        Task result = controller.update(1L, 5L, new TaskController.UpdateTaskRequest("Title", "Desc", due));
+
+        assertThat(result.getDueDate()).isEqualTo(due);
+        verify(taskService).update(1L, 5L, "Title", "Desc", due);
+    }
+
+    @Test
+    void updatePassesNullDueDateThroughSoTheServiceCanClearIt() {
+        Task updated = new Task("Title", "Desc", 1L);
+        when(taskService.update(1L, 5L, "Title", "Desc", null)).thenReturn(updated);
+
+        controller.update(1L, 5L, new TaskController.UpdateTaskRequest("Title", "Desc", null));
+
+        verify(taskService).update(1L, 5L, "Title", "Desc", null);
     }
 }
