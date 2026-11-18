@@ -1,0 +1,2 @@
+- [Task module known issues](task-module-known-issues.md) — open findings: ownership gap, create validation, dup DTOs, dead Priority.parse, silent subscribes
+- [Task module locations and compliance baseline](task-module-locations-and-baseline.md) — file paths, GlobalExceptionHandler, sub-CLAUDE.md quirks, what is already compliant

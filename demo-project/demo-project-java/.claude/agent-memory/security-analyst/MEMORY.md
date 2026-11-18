@@ -1,4 +1,6 @@
 - [Task module IDOR and validation](task-module-idor-and-validation.md) — delete/markCompleted lack owner check; update has it; @Valid inert
 - [JWT validation fail-open](jwt-validation-fail-open.md) — isTokenValid always true (training bug); expiry only via parse side effect
+- [User module exposure and validation](user-module-exposure-and-validation.md) — no user endpoints; passwordHash lacks @JsonIgnore; empty pw accepted
 - [Config files access denied](config-files-access-denied.md) — application.properties unreadable; JWT secret and H2 console unverified
+- [Auth endpoint enumeration and abuse](auth-endpoint-enumeration-and-abuse.md) — register/login enumeration, no rate limit, token sent to all hosts
 - [Dependency versions baseline](dependency-versions-baseline.md) — Boot 3.2.5 / Security 6.2.4 / Tomcat 10.1.20 as of 2026-11-18
