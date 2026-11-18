@@ -180,6 +180,48 @@ class TaskServiceTest {
     }
 
     @Test
+    void createRejectsBlankOrNullTitle() {
+        assertThatThrownBy(() -> taskService.create(1L, "   ", "Desc", null))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> taskService.create(1L, null, "Desc", null))
+                .isInstanceOf(IllegalArgumentException.class);
+        verify(taskRepository, never()).save(any());
+    }
+
+    @Test
+    void createRejectsEmptyTitle() {
+        assertThatThrownBy(() -> taskService.create(1L, "", "Desc", null))
+                .isInstanceOf(IllegalArgumentException.class);
+        verify(taskRepository, never()).save(any());
+    }
+
+    @Test
+    void createRejectionMessageMatchesWhatTheApiReturns() {
+        // GlobalExceptionHandler turns this message into the 400 {"error": "..."} body.
+        assertThatThrownBy(() -> taskService.create(1L, " ", "Desc", null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Title must not be blank");
+    }
+
+    @Test
+    void createRejectsBlankTitleEvenWhenDueDateIsValid() {
+        assertThatThrownBy(() -> taskService.create(1L, "\t\n", "Desc", LocalDate.of(2026, 12, 1)))
+                .isInstanceOf(IllegalArgumentException.class);
+        verify(taskRepository, never()).save(any());
+    }
+
+    @Test
+    void createKeepsTitleWithSurroundingWhitespaceUnchanged() {
+        // Only blank titles are rejected; a non-blank title is stored as given (no trimming).
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Task result = taskService.create(1L, "  Padded  ", null, null);
+
+        assertThat(result.getTitle()).isEqualTo("  Padded  ");
+        verify(taskRepository).save(any(Task.class));
+    }
+
+    @Test
     void updateSetsDueDateWhenNoneWasSet() {
         Task task = new Task("Title", "Desc", 1L);
         when(taskRepository.findById(10L)).thenReturn(Optional.of(task));
