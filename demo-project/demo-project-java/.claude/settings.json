@@ -15,7 +15,9 @@
             "Bash(gh auth status)",
             "Read(**)",
             "Write(backend/src/**)",
-            "Write(frontend/src/**)"
+            "Write(frontend/src/**)",
+            "Write(.claude/agent-memory/**)",
+            "Edit(.claude/agent-memory/**)"
         ],
         "ask": [
             "Bash(git push:*)",
