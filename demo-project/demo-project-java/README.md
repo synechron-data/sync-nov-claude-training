@@ -13,12 +13,15 @@ and a per-user task list.
 demo-project/
 ├── backend/     ← Spring Boot REST API (port 8080)
 ├── frontend/    ← Angular app (port 4200)
+├── docs/        ← architecture and API documentation
 └── README.md
 ```
 
-This repo does **not** include a `CLAUDE.md`, `.claude/` folder, or a
-Spec Kit setup — those are created live by participants during the session
-(Modules 4, 6, 7, 8, 9–10, and 11). Do not pre-create them.
+## Documentation
+
+- [Architecture](docs/architecture.md): system overview, data model, auth flow, error handling, known limitations
+- [API reference](docs/api.md): every endpoint with request/response examples
+- `CLAUDE.md` (root, `backend/`, `frontend/`): conventions and non-obvious behaviour for developers and Claude Code
 
 ## Prerequisites
 
@@ -54,15 +57,18 @@ running on port 8080 (CORS is already configured for this).
 ## API quick reference
 
 ```
-POST /api/auth/register   { email, password, displayName }  → { token }
-POST /api/auth/login      { email, password }                → { token }
-GET    /api/tasks                                             (auth required)
-POST   /api/tasks         { title, description }              (auth required)
-PATCH  /api/tasks/{id}/complete                                (auth required)
-DELETE /api/tasks/{id}                                         (auth required)
+POST   /api/auth/register  { email, password, displayName }          → { token }
+POST   /api/auth/login     { email, password }                        → { token }
+GET    /api/tasks                                                     (auth required)
+GET    /api/tasks/completed                                           (auth required)
+POST   /api/tasks          { title, description?, dueDate? }          (auth required)
+PUT    /api/tasks/{id}     { title, description?, dueDate? }          (auth required)
+PATCH  /api/tasks/{id}/complete                                       (auth required)
+DELETE /api/tasks/{id}                                                (auth required)
 ```
 
 All `/api/tasks/**` endpoints require `Authorization: Bearer <token>`.
+`dueDate` is `yyyy-MM-dd`. Full details: [docs/api.md](docs/api.md).
 
 ## Deliberate issues (for training demos — do not fix before the session)
 
