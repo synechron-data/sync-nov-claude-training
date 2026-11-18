@@ -1,0 +1,1 @@
+- [Task module coverage baseline](task-module-coverage-baseline.md) — test counts, coverage numbers and known gaps from the 2026-11-18 audit

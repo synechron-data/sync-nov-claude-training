@@ -1,0 +1,1 @@
+- [Task module perf findings](task-module-perf-findings.md) — ownerId unindexed, unpaginated lists, no OnPush/trackBy, refetch-after-mutate (2026-11-18)
