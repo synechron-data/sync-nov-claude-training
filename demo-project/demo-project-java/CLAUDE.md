@@ -19,6 +19,7 @@
 - Frontend: services own HTTP calls — components never call HttpClient directly
 - Always create test cases for any code change or any new code addition
 - Always invoke the `write-tests` skill (via the Skill tool) right after adding or modifying any method, endpoint, service, repository query, controller or component — do not hand-write the tests instead, and do it before reporting the task as done
+- Always invoke the `write-docs` skill (via the Skill tool) after any change that affects documented behaviour — endpoints, controllers, request/response records, entities, auth/JWT/security/CORS config, exception handling, or frontend routes and services — to keep `docs/` and the README API quick reference in sync with the code. Run it after `write-tests` and before reporting the task as done; do not hand-edit those docs instead
 
 ## Testing
 - Backend: JUnit 5, tests mirror main/java structure under src/test/java
