@@ -1,6 +1,7 @@
 package com.technizer.taskapi.task;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -28,6 +29,11 @@ public class Task {
 
     @Column(nullable = false)
     private Instant createdAt = Instant.now();
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @ColumnDefault("'MEDIUM'")
+    private Priority priority = Priority.MEDIUM;
 
     public Task() {
     }
@@ -92,5 +98,13 @@ public class Task {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority;
     }
 }

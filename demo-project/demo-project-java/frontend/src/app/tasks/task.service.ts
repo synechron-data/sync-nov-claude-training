@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+export type Priority = 'LOW' | 'MEDIUM' | 'HIGH';
+
 export interface Task {
   id: number;
   title: string;
@@ -10,6 +12,7 @@ export interface Task {
   dueDate: string | null;
   ownerId: number;
   createdAt: string;
+  priority: Priority;
 }
 
 @Injectable({ providedIn: 'root' })

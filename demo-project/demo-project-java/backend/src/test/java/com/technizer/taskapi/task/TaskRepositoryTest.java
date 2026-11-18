@@ -4,11 +4,13 @@ import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DataJpaTest
 class TaskRepositoryTest {
@@ -86,5 +88,88 @@ class TaskRepositoryTest {
         taskRepository.save(loaded);
 
         assertThat(reload(id).getDueDate()).isNull();
+    }
+
+    @Test
+    void taskSavedWithoutAnExplicitPriorityIsPersistedAndReloadedAsMedium() {
+        Long id = taskRepository.save(new Task("No priority set", null, 1L)).getId();
+
+        assertThat(reload(id).getPriority()).isEqualTo(Priority.MEDIUM);
+    }
+
+    @Test
+    void newTaskDefaultsToMediumPriorityInMemory() {
+        assertThat(new Task("Fresh", null, 1L).getPriority()).isEqualTo(Priority.MEDIUM);
+    }
+
+    @Test
+    void highPriorityIsPersistedAndReloaded() {
+        Task task = new Task("Urgent", null, 1L);
+        task.setPriority(Priority.HIGH);
+        Long id = taskRepository.save(task).getId();
+
+        assertThat(reload(id).getPriority()).isEqualTo(Priority.HIGH);
+    }
+
+    @Test
+    void lowPriorityIsPersistedAndReloaded() {
+        Task task = new Task("Whenever", null, 1L);
+        task.setPriority(Priority.LOW);
+        Long id = taskRepository.save(task).getId();
+
+        assertThat(reload(id).getPriority()).isEqualTo(Priority.LOW);
+    }
+
+    @Test
+    void priorityCanBeChangedAfterBeingSet() {
+        Task task = new Task("Reprioritised", null, 1L);
+        task.setPriority(Priority.LOW);
+        Long id = taskRepository.save(task).getId();
+
+        Task loaded = reload(id);
+        loaded.setPriority(Priority.HIGH);
+        taskRepository.save(loaded);
+
+        assertThat(reload(id).getPriority()).isEqualTo(Priority.HIGH);
+    }
+
+    @Test
+    void priorityIsStoredAsTheEnumNameText() {
+        Task task = new Task("Stored as text", null, 1L);
+        task.setPriority(Priority.HIGH);
+        Long id = taskRepository.save(task).getId();
+        entityManager.flush();
+
+        Object stored = entityManager
+                .createNativeQuery("select priority from task where id = ?1")
+                .setParameter(1, id)
+                .getSingleResult();
+
+        assertThat(stored).isEqualTo("HIGH");
+    }
+
+    @Test
+    void priorityDoesNotAffectOwnerScopedQueries() {
+        Task high = new Task("High", null, 1L);
+        high.setPriority(Priority.HIGH);
+        taskRepository.save(high);
+        Task otherUsers = new Task("Other user's", null, 2L);
+        otherUsers.setPriority(Priority.HIGH);
+        taskRepository.save(otherUsers);
+
+        assertThat(taskRepository.findByOwnerId(1L))
+                .extracting(Task::getTitle, Task::getPriority)
+                .containsExactly(org.assertj.core.groups.Tuple.tuple("High", Priority.HIGH));
+    }
+
+    @Test
+    void nullPriorityIsRejectedByThePersistenceLayer() {
+        Task task = new Task("Null priority", null, 1L);
+        task.setPriority(null);
+
+        assertThatThrownBy(() -> {
+            taskRepository.save(task);
+            entityManager.flush();
+        }).isInstanceOf(DataIntegrityViolationException.class);
     }
 }

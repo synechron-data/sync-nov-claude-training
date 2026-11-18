@@ -16,6 +16,7 @@ describe('TaskListComponent', () => {
     dueDate: null,
     ownerId: 1,
     createdAt: '2026-11-17T00:00:00Z',
+    priority: 'MEDIUM',
     ...overrides,
   });
 
