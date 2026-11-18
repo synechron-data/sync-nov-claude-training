@@ -2,7 +2,7 @@
 
 How the Task Manager is put together: a Spring Boot REST API (`backend/`) and an Angular single-page app (`frontend/`) that talk over JSON/HTTP, with stateless JWT authentication.
 
-See also: [API reference](api.md) · [Frontend guide](../frontend/README.md) · [Project README](../README.md)
+See also: [API reference](api.md) · [Frontend guide](frontend.md) · [Contributing](contributing.md) · [Project README](../README.md)
 
 ## System overview
 

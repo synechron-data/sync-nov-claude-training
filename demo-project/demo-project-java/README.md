@@ -21,6 +21,8 @@ demo-project/
 
 - [Architecture](docs/architecture.md): system overview, data model, auth flow, error handling, known limitations
 - [API reference](docs/api.md): every endpoint with request/response examples
+- [Frontend guide](docs/frontend.md): Angular layout, routes, client-side auth, conventions, testing
+- [Contributing](docs/contributing.md): setup, tests, coding standards, Claude Code skills, git workflow
 - `CLAUDE.md` (root, `backend/`, `frontend/`): conventions and non-obvious behaviour for developers and Claude Code
 
 ## Prerequisites
