@@ -44,7 +44,7 @@ The full list is in the `CLAUDE.md` files. In short:
 - Constructor injection with `private final` fields. No field injection.
 - DTOs as Java records where practical. Controllers return entities or records directly, not `ResponseEntity`.
 - Entities keep a public no-arg constructor, a convenience constructor and explicit getters/setters. There is no Lombok.
-- Beware: Bean Validation annotations on request records are **not enforced** (no `@Valid`). Validate in the service, as `TaskService.update()` does. If you add `@Valid`, also add a handler for `MethodArgumentNotValidException`, or the catch-all handler turns it into a 500.
+- Beware: Bean Validation annotations on request records are **not enforced** (no `@Valid`). Validate in the service, as `TaskService.create()` and `update()` do. If you add `@Valid`, also add a handler for `MethodArgumentNotValidException`, or the catch-all handler turns it into a 500.
 
 **Frontend**
 - Standalone components only. No NgModules for new features.

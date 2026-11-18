@@ -96,7 +96,7 @@ sequenceDiagram
 
 | Exception | Status | Typical cause |
 |---|---|---|
-| `IllegalArgumentException` | 400 | Duplicate email, invalid credentials, blank title on update |
+| `IllegalArgumentException` | 400 | Duplicate email, invalid credentials, blank title on create or update |
 | `HttpMessageNotReadableException` | 400 | Malformed JSON or an invalid `dueDate` (body is `"Malformed request body"`) |
 | `NoSuchElementException` | 404 | Task not found (or not owned by the caller, on update) |
 | any other `Exception` | 500 | Body is a generic `"Unexpected server error"` |
@@ -133,7 +133,7 @@ Some of these are deliberate, as the project is a training demo. See the "Delibe
 
 - **Expired tokens are accepted.** `JwtUtil.isTokenValid()` always returns `true`. In practice an expired token still fails, because jjwt checks `exp` while parsing in `extractUserId()`. The failure surfaces as an empty-body 403.
 - **Missing ownership checks.** `TaskService.markCompleted()` and `delete()` never compare the task's owner with the caller, so a user can complete or delete another user's task. `update()` does check, and returns 404 for tasks owned by others.
-- **Bean Validation is inert.** The `@Email` and `@NotBlank` annotations on request records have no effect because no controller parameter uses `@Valid`. Only `update` enforces a non-blank title, in the service.
+- **Bean Validation is inert.** The `@Email` and `@NotBlank` annotations on request records have no effect because no controller parameter uses `@Valid`. Only `TaskService.create()` and `update()` enforce a non-blank title, in the service. Nothing else is validated: for example, auth requests accept any email or password string.
 - **`DELETE` of a missing ID returns 200**, because `deleteById` is a silent no-op in Spring Data JPA 3.x.
 - **403 instead of 401** for unauthenticated requests (no `AuthenticationEntryPoint` is configured).
 - **Hardcoded demo JWT secret** in `application.properties`. Use an externally supplied secret for anything beyond local development.

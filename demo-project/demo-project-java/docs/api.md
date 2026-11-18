@@ -111,9 +111,13 @@ Request:
 
 `description` and `dueDate` are optional. Response `200`: the created `Task`.
 
-> `title` is declared `@NotBlank`, but that annotation is not enforced (see [Known limitations](architecture.md#known-limitations)), so create does not reject a blank title. Update does.
+> The `@NotBlank` annotation on `title` is not what enforces this (Bean Validation is inert, see [Known limitations](architecture.md#known-limitations)). `TaskService.create()` checks the title itself.
 
-Errors: `400 Malformed request body` for invalid JSON or a `dueDate` that is not `yyyy-MM-dd`.
+Errors:
+- `400 Title must not be blank` if `title` is missing, empty or only whitespace. Nothing is saved.
+- `400 Malformed request body` for invalid JSON or a `dueDate` that is not `yyyy-MM-dd`.
+
+A non-blank title is stored exactly as given, with no trimming.
 
 ### `PUT /api/tasks/{id}`
 
