@@ -32,5 +32,18 @@
             "Bash(curl:*)",
             "Bash(wget:*)"
         ]
+    },
+    "hooks": {
+        "PreToolUse": [
+            {
+                "matcher": "Bash|Powershell",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/pretooluse-demo.js\""
+                    }
+                ]
+            }
+        ]
     }
 }

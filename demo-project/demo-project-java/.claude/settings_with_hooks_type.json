@@ -1,0 +1,32 @@
+{
+    "hooks": {
+        "PreToolUse": [
+            {
+                "matcher": "Bash",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "Which command to run before using the tool"
+                    },
+                    {
+                        "type": "prompt",
+                        "prompt": "Which prompt to run before using the tool"
+                    },
+                    {
+                        "type": "http",
+                        "url": "https://example.com/api/pretooluse"
+                    },
+                    {
+                        "type": "agent",
+                        "prompt": "Run the security agent before using the tool"
+                    },
+                    {
+                        "type": "mcp_tool",
+                        "server": "https://example.com/mcp",
+                        "tool": "security-checker"
+                    }
+                ]
+            }
+        ]
+    }
+}
