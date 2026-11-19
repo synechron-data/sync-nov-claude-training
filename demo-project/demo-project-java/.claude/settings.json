@@ -73,6 +73,17 @@
                     }
                 ]
             }
+        ],
+        "Notification": [
+            {
+                "matcher": "permission_prompt|idle_prompt",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/slack-notify.js\""
+                    }
+                ]
+            }
         ]
     }
 }
