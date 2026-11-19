@@ -15,3 +15,6 @@ frontend/.angular/
 
 # OS
 .DS_Store
+
+# Hook runtime logs
+.claude/hook-logs/
