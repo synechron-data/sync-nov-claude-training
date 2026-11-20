@@ -1,0 +1,24 @@
+{
+    "name": "sync-marketplace",
+    "metadata": {
+        "description": "Synechron Official Marketplace for claude plugins"
+    },
+    "owner": {
+        "name": "Synechron",
+        "email": "info@synechron.com"
+    },
+    "plugins":[
+        {
+            "name": "sync-plugin-1",
+            "source": "./plugins/sync-plugin-1",
+            "description": "Standard Claude Code setup 1 for internal Synechron teams.",
+            "version": "1.0.0"
+        },
+        {
+            "name": "sync-plugin-2",
+            "source": "./plugins/sync-plugin-2",
+            "description": "Standard Claude Code setup 2 for internal Synechron teams.",
+            "version": "1.0.0"
+        }
+    ]
+}

@@ -1,0 +1,58 @@
+{
+    "name": "sync-plugin-1",
+    "version": "1.0.0",
+    "description": "Standard Claude Code setup 1 for internal Synechron Team",
+    "author": {
+        "name": "Synechron AI Team"
+    },
+    "license": "MIT",
+    "hooks": {
+        "PreToolUse": [
+            {
+                "matcher": "Bash|Powershell",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/bash-guard.js\""
+                    }
+                ]
+            }
+        ],
+        "PostToolUse": [
+            {
+                "matcher": "Write|Edit",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/format-fix.js\""
+                    }
+                ]
+            }
+        ],
+        "Stop": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-log.js\""
+                    },
+                    {
+                        "type": "command",
+                        "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/enforce-skills.js\""
+                    }
+                ]
+            }
+        ],
+        "Notification": [
+            {
+                "matcher": "permission_prompt|idle_prompt",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/slack-notify.js\""
+                    }
+                ]
+            }
+        ]
+    }
+}

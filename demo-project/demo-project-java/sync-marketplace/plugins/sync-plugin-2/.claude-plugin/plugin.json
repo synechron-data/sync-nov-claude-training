@@ -1,0 +1,9 @@
+{
+    "name": "sync-plugin-2",
+    "version": "1.0.0",
+    "description": "Standard Claude Code setup 2 for internal Synechron Team",
+    "author": {
+        "name": "Synechron AI Team"
+    },
+    "license": "MIT"
+}
