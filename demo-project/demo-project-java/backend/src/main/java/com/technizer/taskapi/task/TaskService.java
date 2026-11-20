@@ -65,6 +65,9 @@ public class TaskService {
     }
 
     public void delete(Long ownerId, Long taskId) {
-        taskRepository.deleteById(taskId);
+        // Missing and foreign tasks are indistinguishable (404) so task IDs can't be probed.
+        Task task = taskRepository.findByIdAndOwnerId(taskId, ownerId)
+                .orElseThrow(() -> new NoSuchElementException("Task not found: " + taskId));
+        taskRepository.delete(task);
     }
 }

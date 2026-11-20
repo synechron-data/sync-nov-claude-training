@@ -145,9 +145,10 @@ Errors: `404` if the task doesn't exist.
 
 ### `DELETE /api/tasks/{id}`
 
-Deletes the task. No body. Response `200` with an empty body.
+Deletes the caller's own task. No body. Response `200` with an empty body.
 
-> Deleting an ID that doesn't exist also returns `200`. Ownership is not currently checked on this endpoint either.
+Errors:
+- `404 Task not found: {id}` if the task doesn't exist **or belongs to another user** (the same response either way, so IDs can't be probed). Nothing is deleted.
 
 ## Summary
 
