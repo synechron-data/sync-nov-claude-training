@@ -277,4 +277,80 @@ class TaskServiceTest {
         verify(taskRepository, never()).findById(any());
         verify(taskRepository, never()).save(any());
     }
+
+    @Test
+    void deleteRemovesTaskWhenOwnerMatches() {
+        Task task = new Task("Mine", "Desc", 1L);
+        when(taskRepository.findByIdAndOwnerId(10L, 1L)).thenReturn(Optional.of(task));
+
+        taskService.delete(1L, 10L);
+
+        verify(taskRepository).delete(task);
+    }
+
+    @Test
+    void deleteLooksUpTheTaskScopedToTheCallingOwner() {
+        Task task = new Task("Mine", "Desc", 1L);
+        when(taskRepository.findByIdAndOwnerId(10L, 1L)).thenReturn(Optional.of(task));
+
+        taskService.delete(1L, 10L);
+
+        verify(taskRepository).findByIdAndOwnerId(10L, 1L);
+    }
+
+    @Test
+    void deleteThrowsNotFoundAndDeletesNothingWhenTaskBelongsToAnotherUser() {
+        // User 2 asks to delete a task that only exists for owner 1: the scoped lookup finds nothing.
+        when(taskRepository.findByIdAndOwnerId(10L, 2L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> taskService.delete(2L, 10L))
+                .isInstanceOf(NoSuchElementException.class)
+                .hasMessage("Task not found: 10");
+        verify(taskRepository, never()).delete(any(Task.class));
+        verify(taskRepository, never()).deleteById(any());
+    }
+
+    @Test
+    void deleteThrowsNotFoundWhenTaskDoesNotExist() {
+        when(taskRepository.findByIdAndOwnerId(99L, 1L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> taskService.delete(1L, 99L))
+                .isInstanceOf(NoSuchElementException.class)
+                .hasMessage("Task not found: 99");
+        verify(taskRepository, never()).delete(any(Task.class));
+        verify(taskRepository, never()).deleteById(any());
+    }
+
+    @Test
+    void deleteGivesTheSameErrorForMissingAndForeignTasksSoIdsCannotBeProbed() {
+        when(taskRepository.findByIdAndOwnerId(10L, 2L)).thenReturn(Optional.empty());
+        when(taskRepository.findByIdAndOwnerId(10L, 1L)).thenReturn(Optional.empty());
+
+        Throwable foreign = org.assertj.core.api.Assertions.catchThrowable(() -> taskService.delete(2L, 10L));
+        Throwable missing = org.assertj.core.api.Assertions.catchThrowable(() -> taskService.delete(1L, 10L));
+
+        assertThat(foreign).isInstanceOf(NoSuchElementException.class);
+        assertThat(missing).isInstanceOf(foreign.getClass()).hasMessage(foreign.getMessage());
+    }
+
+    @Test
+    void deleteNeverUsesUnscopedDeleteById() {
+        Task task = new Task("Mine", "Desc", 1L);
+        when(taskRepository.findByIdAndOwnerId(10L, 1L)).thenReturn(Optional.of(task));
+
+        taskService.delete(1L, 10L);
+
+        verify(taskRepository, never()).deleteById(any());
+        verify(taskRepository, never()).findById(any());
+    }
+
+    @Test
+    void deleteWithNullOwnerFindsNothingAndThrowsNotFound() {
+        // No null guard in the service: a null principal is passed to the scoped lookup, which matches no row.
+        when(taskRepository.findByIdAndOwnerId(10L, null)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> taskService.delete(null, 10L))
+                .isInstanceOf(NoSuchElementException.class);
+        verify(taskRepository, never()).delete(any(Task.class));
+    }
 }

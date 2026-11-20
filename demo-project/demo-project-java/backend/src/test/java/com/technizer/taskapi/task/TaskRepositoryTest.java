@@ -62,6 +62,48 @@ class TaskRepositoryTest {
     }
 
     @Test
+    void findByIdAndOwnerIdReturnsTheTaskWhenOwnerMatches() {
+        Task mine = save("Mine", 1L, false);
+
+        assertThat(taskRepository.findByIdAndOwnerId(mine.getId(), 1L)).contains(mine);
+    }
+
+    @Test
+    void findByIdAndOwnerIdReturnsEmptyWhenTaskBelongsToAnotherOwner() {
+        Task theirs = save("Theirs", 2L, false);
+
+        assertThat(taskRepository.findByIdAndOwnerId(theirs.getId(), 1L)).isEmpty();
+    }
+
+    @Test
+    void findByIdAndOwnerIdReturnsEmptyForUnknownId() {
+        save("Mine", 1L, false);
+
+        assertThat(taskRepository.findByIdAndOwnerId(999_999L, 1L)).isEmpty();
+    }
+
+    @Test
+    void findByIdAndOwnerIdPicksTheRequestedTaskAmongSeveralOfTheSameOwner() {
+        save("First", 1L, false);
+        Task second = save("Second", 1L, true);
+
+        assertThat(taskRepository.findByIdAndOwnerId(second.getId(), 1L)).contains(second);
+    }
+
+    @Test
+    void deletingTheTaskFoundByIdAndOwnerIdLeavesOtherOwnersTasksUntouched() {
+        Task mine = save("Mine", 1L, false);
+        Task theirs = save("Theirs", 2L, false);
+
+        taskRepository.delete(taskRepository.findByIdAndOwnerId(mine.getId(), 1L).orElseThrow());
+        entityManager.flush();
+        entityManager.clear();
+
+        assertThat(taskRepository.findById(mine.getId())).isEmpty();
+        assertThat(taskRepository.findById(theirs.getId())).isPresent();
+    }
+
+    @Test
     void dueDateIsPersistedAndReloaded() {
         Task task = new Task("With due date", null, 1L);
         task.setDueDate(LocalDate.of(2026, 12, 1));
