@@ -1,13 +1,17 @@
 package com.technizer.taskapi.task;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -115,5 +119,39 @@ class TaskControllerTest {
         controller.update(1L, 5L, new TaskController.UpdateTaskRequest("Title", "Desc", null));
 
         verify(taskService).update(1L, 5L, "Title", "Desc", null);
+    }
+
+    @Test
+    void deleteDelegatesToServiceWithOwnerIdAndTaskId() {
+        controller.delete(1L, 10L);
+
+        verify(taskService).delete(1L, 10L);
+    }
+
+    @Test
+    void deletePropagatesNotFoundFromServiceSoTheExceptionHandlerCanMapItTo404() {
+        doThrow(new NoSuchElementException("Task not found: 10")).when(taskService).delete(2L, 10L);
+
+        assertThatThrownBy(() -> controller.delete(2L, 10L))
+                .isInstanceOf(NoSuchElementException.class)
+                .hasMessage("Task not found: 10");
+    }
+
+    @Test
+    void deletePassesNullOwnerThroughToService() {
+        // No null guard in the controller: an unresolved principal (null) goes straight to the service.
+        controller.delete(null, 10L);
+
+        verify(taskService).delete(null, 10L);
+    }
+
+    @Test
+    void deleteIsMappedToDeleteIdPath() throws NoSuchMethodException {
+        DeleteMapping mapping = TaskController.class
+                .getMethod("delete", Long.class, Long.class)
+                .getAnnotation(DeleteMapping.class);
+
+        assertThat(mapping).isNotNull();
+        assertThat(mapping.value()).containsExactly("/{id}");
     }
 }

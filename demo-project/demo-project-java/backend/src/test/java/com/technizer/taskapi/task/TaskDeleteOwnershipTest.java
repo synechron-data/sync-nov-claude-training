@@ -1,5 +1,6 @@
 package com.technizer.taskapi.task;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -61,7 +62,10 @@ class TaskDeleteOwnershipTest {
   void ownerDeletingOwnTaskGets200AndTheTaskIsDeleted() throws Exception {
     authenticateAs(1L);
 
-    mockMvc.perform(delete("/api/tasks/10")).andExpect(status().isOk());
+    mockMvc
+        .perform(delete("/api/tasks/10"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(""));
 
     verify(taskRepository).delete(usersOneTask);
   }
@@ -93,20 +97,26 @@ class TaskDeleteOwnershipTest {
 
   @Test
   void foreignAndNonExistentTaskResponsesHaveTheSameShapeSoIdsCannotBeProbed() throws Exception {
+    // Task 10 exists but belongs to user 1; task 99 exists for nobody. User 2 asks for both.
+    when(taskRepository.findByIdAndOwnerId(99L, 2L)).thenReturn(Optional.empty());
     authenticateAs(2L);
-    String foreignBody =
-        mockMvc
-            .perform(delete("/api/tasks/10"))
-            .andExpect(status().isNotFound())
-            .andReturn()
-            .getResponse()
-            .getContentAsString();
 
-    when(taskRepository.findByIdAndOwnerId(10L, 2L)).thenReturn(Optional.empty());
-    mockMvc
-        .perform(delete("/api/tasks/10"))
+    String foreign = deleteAndReadNotFoundBody("/api/tasks/10");
+    String missing = deleteAndReadNotFoundBody("/api/tasks/99");
+
+    // Identical apart from the echoed id: same status, same JSON shape, same wording.
+    assertThat(foreign.replace("10", "<id>")).isEqualTo(missing.replace("99", "<id>"));
+    assertThat(foreign).contains("\"error\"").contains("Task not found: 10");
+    assertThat(missing).contains("\"error\"").contains("Task not found: 99");
+  }
+
+  private String deleteAndReadNotFoundBody(String path) throws Exception {
+    return mockMvc
+        .perform(delete(path))
         .andExpect(status().isNotFound())
-        .andExpect(content().json(foreignBody));
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
   }
 
   @Test
