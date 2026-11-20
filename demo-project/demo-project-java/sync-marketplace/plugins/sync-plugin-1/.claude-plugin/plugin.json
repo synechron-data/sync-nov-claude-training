@@ -13,7 +13,7 @@
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/bash-guard.js\""
+                        "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/bash-guard.js\""
                     }
                 ]
             }
@@ -24,7 +24,7 @@
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/format-fix.js\""
+                        "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/format-fix.js\""
                     }
                 ]
             }
@@ -34,11 +34,11 @@
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-log.js\""
+                        "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/session-log.js\""
                     },
                     {
                         "type": "command",
-                        "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/enforce-skills.js\""
+                        "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/enforce-skills.js\""
                     }
                 ]
             }
@@ -49,7 +49,7 @@
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/slack-notify.js\""
+                        "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/slack-notify.js\""
                     }
                 ]
             }
